@@ -211,7 +211,6 @@ mergeInto(LibraryManager.library, {
               // 1 - saving the stack: functions should all be in emterpreter, and should all save&exit/return
               // 2 - restoring the stack: functions should all be in emterpreter, and should all restore&continue
               // 3 - during sleep. this is between 1 and 2. at this time it is ok to call yield funcs
-    saveStack: '',
     yieldCallbacks: [],
     postAsync: null,
     asyncFinalizers: [], // functions to run when all asynchronicity is done
@@ -222,7 +221,7 @@ mergeInto(LibraryManager.library, {
 #if ASSERTIONS
       abortDecorators.push(function(output, what) {
         if (EmterpreterAsync.state !== 0) {
-          return output + '\nThis error happened during an emterpreter-async save or load of the stack. Was there non-emterpreted code on the stack during save (which is unallowed)? You may want to adjust EMTERPRETIFY_BLACKLIST, EMTERPRETIFY_WHITELIST.\nThis is what the stack looked like when we tried to save it: ' + [EmterpreterAsync.state, EmterpreterAsync.saveStack];
+          return output + '\nThis error happened during an emterpreter-async save or load of the stack. Was there non-emterpreted code on the stack during save (which is unallowed)? You may want to adjust EMTERPRETIFY_BLACKLIST, EMTERPRETIFY_WHITELIST.\nThis is what the stack looked like when we tried to save it: ' + [EmterpreterAsync.state, new Error().stack];
         }
         return output;
       });
@@ -298,9 +297,7 @@ mergeInto(LibraryManager.library, {
         callingDoAsyncOp = 0;
 
         EmterpreterAsync.setState(1);
-#if ASSERTIONS
-        EmterpreterAsync.saveStack = new Error().stack; // we can't call  stackTrace()  as it calls compiled code
-#endif
+
         // Pause the main loop, until we resume
         if (Browser.mainLoop.func) {
           Browser.mainLoop.pause();
